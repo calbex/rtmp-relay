@@ -1,6 +1,7 @@
 FROM smebberson/alpine-base:3.0.0
 MAINTAINER Caleb
 
+# Update and install tools
 RUN apk update && \
     apk upgrade && \
     apk add ca-certificates && \
@@ -8,29 +9,38 @@ RUN apk update && \
     apk add openssl-dev && \
     apk add --update alpine-sdk
 
+ARG NGINXVER=1.10.1
+ARG RTMPVER=1.1.8
+
+# Download nginx and rtmp server source
 WORKDIR /tmp
+RUN wget http://nginx.org/download/nginx-$NGINXVER.tar.gz
+RUN wget https://github.com/arut/nginx-rtmp-module/archive/v$RTMPVER.tar.gz
 
-RUN wget http://nginx.org/download/nginx-1.9.9.tar.gz
-RUN wget https://github.com/arut/nginx-rtmp-module/archive/v1.1.8.tar.gz
+# Unpack and remove
+RUN tar -zxvf nginx-$NGINXVER.tar.gz
+RUN tar -xvzf v$RTMPVER.tar.gz
+RUN rm nginx-$NGINXVER.tar.gz
+RUN rm v$RTMPVER.tar.gz
 
-RUN tar -zxvf nginx-1.9.9.tar.gz
-RUN tar -xvzf v1.1.8.tar.gz
-
-RUN rm nginx-1.9.9.tar.gz
-RUN rm v1.1.8.tar.gz
-
-WORKDIR nginx-1.9.9
-
-RUN ./configure --with-http_ssl_module --add-module=../nginx-rtmp-module-1.1.8 --without-http_rewrite_module
+# Install nginx
+WORKDIR nginx-$NGINXVER
+RUN ./configure --with-http_ssl_module --add-module=../nginx-rtmp-module-$RTMPVER --without-http_rewrite_module
 RUN make
 RUN make install
 
 # Clean up files
 WORKDIR /tmp
-RUN rm -Rf nginx-1.9.9/ nginx-rtmp-module-1.1.8/
+RUN rm -Rf nginx-$NGINXVER/ nginx-rtmp-module-$RTMPVER/
 
 WORKDIR /
 RUN mkdir config
-COPY nginx.conf /usr/local/nginx/conf/nginx.conf
+COPY ./nginx.conf /usr/local/nginx/conf/nginx.conf
 
 VOLUME ["/config"]
+
+EXPOSE 80
+
+COPY ./startup.sh /home/startup.sh
+RUN chmod 700 /home/startup.sh
+ENTRYPOINT ["/home/startup.sh"]
