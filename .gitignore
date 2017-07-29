@@ -1,5 +1,6 @@
 # Files folder used for testing Docker volumes
 files/
+config/
 
 # Created by https://www.gitignore.io/api/macos,linux,windows
 
