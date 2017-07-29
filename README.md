@@ -17,7 +17,9 @@ server {
 ```
 
 # Setup Routing on Linux
+Redirect incoming traffic on port 1935 to local server. Used for capturing PS4 Twitch stream.
+
 ```
 sysctl -w net.ipv4.ip_forward=1
-iptables -t nat -A PREROUTING -d 192.0.0.0/8 -p tcp --dport 1935 -j DNAT --to-destination 192.168.1.100:1935
+sudo iptables -t nat -A PREROUTING -p tcp --dport 1935 -j DNAT --to-destination 127.0.0.1:1935
 ```
