@@ -1,0 +1,10 @@
+version: '2'
+services:
+  rtmp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile-arm
+    ports:
+     - "1935:1935"
+    volumes:
+     - ./config:/config
